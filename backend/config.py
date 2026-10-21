@@ -76,7 +76,12 @@ class Config:
     
     # CORS & Frontend URLs
     CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "*")
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    FRONTEND_URL = os.environ.get(
+        "FRONTEND_URL",
+        "https://personalized-ecommerce-recommender-lrhaki.vercel.app"
+        if os.environ.get("FLASK_ENV") == "production"
+        else "http://localhost:5173"
+    )
     
     # Paths (configurable via environment for persistent disk mounts)
     DATA_DIR = Path(os.environ.get("DATA_DIR", str(DATA_DIR)))

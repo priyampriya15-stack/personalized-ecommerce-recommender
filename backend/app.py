@@ -7,6 +7,7 @@ Configures extensions, recommendation services, error handlers, and route bluepr
 
 import os
 import sys
+import re
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -104,28 +105,34 @@ def create_app(config_name: str = "development") -> Flask:
         "http://127.0.0.1:5174",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://personalized-ecommerce-recommender-lrhaki.vercel.app",
+        "https://personalized-ecommerce-recommender.vercel.app",
+        re.compile(r"^https:\/\/.*\.vercel\.app$"),
+        "https://personalized-ecommerce-frontend.onrender.com",
     ]
     if frontend_url:
         for f_url in frontend_url.split(","):
             clean_url = f_url.strip().rstrip("/")
+            if clean_url.endswith("/api"):
+                clean_url = clean_url[:-4].rstrip("/")
             if clean_url and clean_url not in allowed_origins:
                 allowed_origins.append(clean_url)
     if cors_origin and cors_origin != "*":
         for c_url in cors_origin.split(","):
             clean_url = c_url.strip().rstrip("/")
+            if clean_url.endswith("/api"):
+                clean_url = clean_url[:-4].rstrip("/")
             if clean_url and clean_url not in allowed_origins:
                 allowed_origins.append(clean_url)
 
-    if cors_origin == "*" and config_name != "production":
-        CORS(app, resources={r"/api/*": {"origins": "*"}})
-    else:
-        CORS(
-            app,
-            resources={r"/api/*": {"origins": allowed_origins}},
-            supports_credentials=True,
-            allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
-            methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-        )
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": allowed_origins}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        max_age=86400
+    )
 
     # Ensure SQLite directory exists and path is normalized before SQLAlchemy connects
     db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")

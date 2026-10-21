@@ -31,7 +31,7 @@ services:
       - key: DEFAULT_RECOMMENDATION_K
         value: "10"
       - key: FRONTEND_URL
-        value: https://personalized-ecommerce-frontend.onrender.com
+        value: https://personalized-ecommerce-recommender-lrhaki.vercel.app
 
   # ---------------------------------------------------------------------------
   # 2. React 18 + Vite Frontend (Static Site)
@@ -47,4 +47,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        value: https://personalized-ecommerce-api.onrender.com/api
+        value: https://personalized-ecommerce-api-9nd9.onrender.com/api
