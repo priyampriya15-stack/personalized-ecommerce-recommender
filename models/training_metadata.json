@@ -1,0 +1,25 @@
+{
+  "training_timestamp": "2026-10-20T17:00:43.499426+00:00",
+  "components": {
+    "popularity": {
+      "artifact": "popularity_baseline.joblib",
+      "min_threshold": 3,
+      "global_mean_rating": 4.5459,
+      "ranked_catalog_count": 8337
+    },
+    "collaborative_filtering": {
+      "artifact": "collaborative_svd.joblib",
+      "algorithm": "TruncatedSVD",
+      "n_components": 30,
+      "users_in_matrix": 2243,
+      "items_in_matrix": 8337
+    },
+    "content_based": {
+      "artifact": "content_tfidf.joblib",
+      "algorithm": "TF-IDF + Cosine Similarity",
+      "max_features": 5000,
+      "vocabulary_size": 5000,
+      "catalog_items": 8337
+    }
+  }
+}

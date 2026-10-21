@@ -1,0 +1,34 @@
+{
+  "dataset_name": "Amazon Reviews 2023 (McAuley Lab / UCSD)",
+  "source_repository": "https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023",
+  "processed_timestamp": "2026-10-20T16:48:05.862598+00:00",
+  "random_seed": 42,
+  "categories": [
+    "All_Beauty",
+    "Appliances",
+    "Digital_Music"
+  ],
+  "metrics": {
+    "total_products": 8337,
+    "total_interactions": 39946,
+    "unique_users": 36540,
+    "matrix_sparsity_percent": 99.9869,
+    "dense_core_interactions": 5236,
+    "dense_core_users": 2243,
+    "dense_core_products": 1962,
+    "train_interactions": 3136,
+    "test_interactions": 2100,
+    "mean_product_price": 32.78,
+    "mean_product_rating": 4.35,
+    "category_distribution": {
+      "Digital Music": 5339,
+      "All Beauty": 1499,
+      "Appliances": 1499
+    }
+  },
+  "limitations": [
+    "Purchase history is proxied by verified_purchase reviews and explicit product ratings.",
+    "Amazon prices formatted as text or missing were imputed using category medians.",
+    "Cold users (<2 interactions) are preserved in the full interaction log but held out of dense matrix factorization."
+  ]
+}
