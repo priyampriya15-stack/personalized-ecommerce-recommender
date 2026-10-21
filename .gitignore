@@ -46,18 +46,19 @@ data/*.db
 data/*.sqlite
 data/*.sqlite3
 
-# Trained Model Binaries (Reproducible via scripts/train_models.py)
-models/*.joblib
+# Trained Model Binaries (Production assets)
 models/*.pkl
 models/*.pt
 models/*.pth
+!models/*.joblib
 !models/.gitkeep
 !models/training_metadata.json
 
-# Large Generated Datasets (Reproducible via scripts/preprocess_data.py)
+# Large Generated Datasets (Keep raw and csv ignored, include processed parquet)
 data/raw/*
 !data/raw/.gitkeep
-data/processed/*
+data/processed/*.csv
+!data/processed/*.parquet
 !data/processed/.gitkeep
 !data/processed/preprocessing_metadata.json
 

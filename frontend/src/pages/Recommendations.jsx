@@ -36,9 +36,9 @@ export const Recommendations = () => {
         // Fetch personalized algorithms if authenticated
         if (isAuthenticated && user?.id) {
           const [hybRes, cfRes, cbRes] = await Promise.allSettled([
-            recommendationService.getHybridRecommendations(user.id, { limit: 8 }),
-            recommendationService.getCollaborativeRecommendations(user.id, { limit: 8 }),
-            recommendationService.getContentBasedRecommendations(user.id, { limit: 8 }),
+            recommendationService.getHybridRecommendations(user?.id || 'me', { limit: 8 }),
+            recommendationService.getCollaborativeRecommendations(user?.id || 'me', { limit: 8 }),
+            recommendationService.getContentBasedRecommendations(user?.id || 'me', { limit: 8 }),
           ]);
 
           if (isMounted) {

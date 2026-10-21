@@ -21,7 +21,7 @@ def verify_user_access(requested_user_id: str) -> Optional[User]:
         return None
 
     current_user: User = g.current_user
-    is_self = str(requested_user_id).lower() == "me" or str(current_user.id) == str(requested_user_id)
+    is_self = str(requested_user_id).lower() in ("me", "self", "") or str(current_user.id) == str(requested_user_id)
 
     # Admins can view any user; standard users can only view their own
     if is_self:

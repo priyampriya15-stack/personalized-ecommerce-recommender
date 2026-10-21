@@ -90,23 +90,22 @@ def initialize_production():
             if products_parquet.exists() or products_csv.exists():
                 logger.info("Importing real Amazon Reviews 2023 product catalog...")
                 import_products_catalog()
-                seed_users()
-                
-                # Check train interactions for active user seeding
-                if train_parquet.exists() or train_csv.exists():
-                    import pandas as pd
-                    df_train = pd.read_parquet(train_parquet) if train_parquet.exists() else pd.read_csv(train_csv)
-                    df_products = pd.read_parquet(products_parquet) if products_parquet.exists() else pd.read_csv(products_csv)
-                    seed_active_user_with_interactions(df_train, df_products)
-                logger.info("Product catalog and seed accounts imported successfully.")
+                logger.info("Product catalog imported successfully.")
             else:
                 logger.warning(
                     f"Processed catalog files not found at {data_processed_dir}. "
                     "Database schema created; catalog will be populated once dataset is available."
                 )
-                seed_users()
         else:
             logger.info(f"Database catalog already contains {product_count} products. Skipping import.")
+
+        # Always ensure seed accounts and active user interactions exist (idempotent)
+        seed_users()
+        if (train_parquet.exists() or train_csv.exists()) and (products_parquet.exists() or products_csv.exists()):
+            import pandas as pd
+            df_train = pd.read_parquet(train_parquet) if train_parquet.exists() else pd.read_csv(train_csv)
+            df_products = pd.read_parquet(products_parquet) if products_parquet.exists() else pd.read_csv(products_csv)
+            seed_active_user_with_interactions(df_train, df_products)
             
         # 3. Check ML model artifacts
         models_dir = Path(app.config.get("MODELS_DIR", BASE_DIR / "models"))

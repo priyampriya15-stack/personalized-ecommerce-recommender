@@ -65,7 +65,7 @@ export const Home = () => {
     const fetchPersonalized = async () => {
       try {
         setLoadingHybrid(true);
-        const res = await recommendationService.getHybridRecommendations(user.id, { limit: 4 });
+        const res = await recommendationService.getHybridRecommendations(user?.id || 'me', { limit: 4 });
         if (res && res.data) {
           setHybridRecs(res.data);
         }
