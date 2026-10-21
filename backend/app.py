@@ -126,6 +126,29 @@ def create_app(config_name: str = "development") -> Flask:
             allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
             methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         )
+
+    # Ensure SQLite directory exists and path is normalized before SQLAlchemy connects
+    db_uri = app.config.get("SQLALCHEMY_DATABASE_URI", "")
+    if db_uri.startswith("sqlite:///"):
+        path_part = db_uri.replace("sqlite:///", "", 1)
+        if path_part != ":memory:":
+            sqlite_path = Path(path_part)
+            posix_str = sqlite_path.as_posix()
+            if not sqlite_path.is_absolute() or posix_str.startswith("/data/"):
+                if posix_str.startswith("/data/"):
+                    rel_path = posix_str.lstrip("/")
+                    sqlite_path = (BASE_DIR / rel_path).resolve()
+                else:
+                    sqlite_path = (BASE_DIR / sqlite_path).resolve()
+            else:
+                sqlite_path = sqlite_path.resolve()
+            try:
+                sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+            except (PermissionError, OSError):
+                sqlite_path = (BASE_DIR / "data" / sqlite_path.name).resolve()
+                sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+            app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{sqlite_path.as_posix()}"
+
     db.init_app(app)
 
     # Load recommendation services

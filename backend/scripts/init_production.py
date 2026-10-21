@@ -31,13 +31,50 @@ logger = logging.getLogger("init_production")
 def initialize_production():
     logger.info("=== Running Production Deployment Initialization ===")
     
+    # 0. Ensure application data, processed, and models directories exist
+    data_dir = (BASE_DIR / "data").resolve()
+    data_dir.mkdir(parents=True, exist_ok=True)
+    (data_dir / "processed").mkdir(parents=True, exist_ok=True)
+    
+    models_dir = (BASE_DIR / "models").resolve()
+    models_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Resolve and ensure database parent directory exists BEFORE app creation or connection
+    raw_db_url = os.environ.get("DATABASE_URL")
+    if raw_db_url and raw_db_url.startswith("sqlite:///"):
+        path_part = raw_db_url.replace("sqlite:///", "", 1)
+        if path_part != ":memory:":
+            db_path = Path(path_part)
+            posix_str = db_path.as_posix()
+            if not db_path.is_absolute() or posix_str.startswith("/data/"):
+                if posix_str.startswith("/data/"):
+                    rel_path = posix_str.lstrip("/")
+                    db_path = (BASE_DIR / rel_path).resolve()
+                else:
+                    db_path = (BASE_DIR / db_path).resolve()
+            else:
+                db_path = db_path.resolve()
+            try:
+                db_path.parent.mkdir(parents=True, exist_ok=True)
+            except (PermissionError, OSError):
+                db_path = (BASE_DIR / "data" / db_path.name).resolve()
+                db_path.parent.mkdir(parents=True, exist_ok=True)
+            os.environ["DATABASE_URL"] = f"sqlite:///{db_path.as_posix()}"
+            logger.info(f"Verified SQLite database directory: {db_path.parent} -> {db_path}")
+    elif not raw_db_url:
+        default_db = (data_dir / "ecommerce.db").resolve()
+        default_db.parent.mkdir(parents=True, exist_ok=True)
+        os.environ["DATABASE_URL"] = f"sqlite:///{default_db.as_posix()}"
+        logger.info(f"Verified default SQLite database directory: {default_db.parent} -> {default_db}")
+
     env = os.environ.get("FLASK_ENV", "production")
     app = create_app(env)
     
     with app.app_context():
         # 1. Create all database tables
-        logger.info("Verifying database schema...")
+        logger.info(f"Initializing database schema at: {app.config['SQLALCHEMY_DATABASE_URI']}")
         db.create_all()
+        logger.info("Database schema initialized successfully.")
         
         # 2. Check if product catalog is populated
         product_count = Product.query.count()
