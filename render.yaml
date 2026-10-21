@@ -1,0 +1,55 @@
+# =============================================================================
+# Render Blueprint Configuration (Infrastructure-as-Code)
+# Personalized E-Commerce Recommendation System
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. Flask REST API + ML Recommendation Engine (Web Service)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: personalized-ecommerce-api
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt && python backend/scripts/init_production.py
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///data/ecommerce.db
+      - key: DEFAULT_HYBRID_ALPHA
+        value: "0.25"
+      - key: DEFAULT_RECOMMENDATION_K
+        value: "10"
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: personalized-ecommerce-frontend
+          property: host
+
+  # ---------------------------------------------------------------------------
+  # 2. React 18 + Vite Frontend (Static Site)
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: personalized-ecommerce-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://personalized-ecommerce-api.onrender.com/api

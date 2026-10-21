@@ -27,16 +27,17 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Recommendation System Defaults
-    DEFAULT_HYBRID_ALPHA = float(os.environ.get("DEFAULT_HYBRID_ALPHA", 0.5))
+    DEFAULT_HYBRID_ALPHA = float(os.environ.get("DEFAULT_HYBRID_ALPHA", 0.25))
     DEFAULT_RECOMMENDATION_K = int(os.environ.get("DEFAULT_RECOMMENDATION_K", 10))
     
-    # CORS
+    # CORS & Frontend URLs
     CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "*")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
     
-    # Paths
-    DATA_DIR = DATA_DIR
-    MODELS_DIR = MODELS_DIR
-    REPORTS_DIR = REPORTS_DIR
+    # Paths (configurable via environment for persistent disk mounts)
+    DATA_DIR = Path(os.environ.get("DATA_DIR", str(DATA_DIR)))
+    MODELS_DIR = Path(os.environ.get("MODELS_DIR", str(MODELS_DIR)))
+    REPORTS_DIR = Path(os.environ.get("REPORTS_DIR", str(REPORTS_DIR)))
 
 
 class DevelopmentConfig(Config):

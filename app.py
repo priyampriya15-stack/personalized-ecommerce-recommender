@@ -1,6 +1,9 @@
 """
-Root application runner for NexStore Recommendation Engine.
-Allows starting the server via `python app.py` or `python backend/app.py`.
+app.py
+------
+Root application runner and WSGI entry point for Gunicorn / Render deployment.
+Supports production Gunicorn: `gunicorn app:app --bind 0.0.0.0:$PORT`
+and local development: `python app.py`.
 """
 
 import os
@@ -15,11 +18,15 @@ if str(PROJECT_ROOT) not in sys.path:
 from backend.app import create_app
 from backend.models.database_models import db
 
+# Module-level app instance for Gunicorn WSGI server
+env = os.environ.get("FLASK_ENV", "production")
+app = create_app(env)
+
+# Ensure database tables exist upon startup
+with app.app_context():
+    db.create_all()
+
 if __name__ == "__main__":
-    env = os.environ.get("FLASK_ENV", "development")
-    app = create_app(env)
-    with app.app_context():
-        db.create_all()
     port = int(os.environ.get("PORT", 5000))
-    print(f"Starting server on http://localhost:{port}")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    print(f"Starting server on http://0.0.0.0:{port}")
+    app.run(host="0.0.0.0", port=port, debug=(env == "development"))

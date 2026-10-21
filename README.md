@@ -226,6 +226,40 @@ npm run dev
 # Client running at: http://localhost:5173
 ```
 
+### 7.5 Render Cloud Production Deployment
+
+The project includes infrastructure-as-code ([`render.yaml`](file:///c:/Users/MI/OneDrive/Desktop/e-commerce/render.yaml)) supporting zero-configuration automated deployment on [Render](https://render.com):
+
+#### Option A: One-Click Blueprint Deployment (Recommended)
+1. Fork or push this repository to GitHub: `https://github.com/priyampriya15-stack/personalized-ecommerce-recommender.git`.
+2. In the [Render Dashboard](https://dashboard.render.com), click **New +** $\rightarrow$ **Blueprint**.
+3. Connect your GitHub repository. Render will automatically parse [`render.yaml`](file:///c:/Users/MI/OneDrive/Desktop/e-commerce/render.yaml) and configure both services.
+4. Click **Apply**. Render will automatically build the backend web service and the frontend static site with SPA rewrite rules.
+
+#### Option B: Manual Service Configuration
+1. **Backend Web Service (`personalized-ecommerce-api`):**
+   - **Environment:** `Python 3`
+   - **Root Directory:** `./`
+   - **Build Command:** `pip install -r backend/requirements.txt && python backend/scripts/init_production.py`
+   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120`
+   - **Health Check Path:** `/api/health`
+   - **Environment Variables:**
+     - `FLASK_ENV`: `production`
+     - `SECRET_KEY`: *(Auto-generated 256-bit string)*
+     - `JWT_SECRET_KEY`: *(Auto-generated 256-bit string)*
+     - `DATABASE_URL`: `sqlite:///data/ecommerce.db`
+     - `FRONTEND_URL`: `https://personalized-ecommerce-frontend.onrender.com`
+     - `DEFAULT_HYBRID_ALPHA`: `0.25`
+2. **Frontend Static Site (`personalized-ecommerce-frontend`):**
+   - **Build Command:** `cd frontend && npm install && npm run build`
+   - **Publish Directory:** `frontend/dist`
+   - **Routes (Rewrite):** `/*` $\rightarrow$ `/index.html` (preserves React Router deep-links)
+   - **Environment Variable:** `VITE_API_BASE_URL=https://personalized-ecommerce-api.onrender.com/api`
+
+#### Database Persistence Notice (SQLite on Render)
+- **Render Disks (Paid Tiers):** For permanent filesystem persistence across restarts, attach a 1GB Render Disk mounted at `/data` and set `DATABASE_URL=sqlite:////data/ecommerce.db` and `DATA_DIR=/data`.
+- **Render Free Tier:** The container filesystem is ephemeral; state resets on cold restarts. [`init_production.py`](file:///c:/Users/MI/OneDrive/Desktop/e-commerce/backend/scripts/init_production.py) automatically runs on each build to ensure schema and initial catalog integrity.
+
 ---
 
 ## 8. Pre-Seeded Default Accounts

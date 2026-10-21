@@ -94,8 +94,38 @@ def create_app(config_name: str = "development") -> Flask:
     config_class = config_by_name.get(config_name, config_by_name["development"])
     app.config.from_object(config_class)
 
-    # Initialize extensions
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+    # Initialize extensions with production CORS configuration
+    frontend_url = os.environ.get("FRONTEND_URL")
+    cors_origin = os.environ.get("CORS_ORIGIN")
+    allowed_origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+    if frontend_url:
+        for f_url in frontend_url.split(","):
+            clean_url = f_url.strip().rstrip("/")
+            if clean_url and clean_url not in allowed_origins:
+                allowed_origins.append(clean_url)
+    if cors_origin and cors_origin != "*":
+        for c_url in cors_origin.split(","):
+            clean_url = c_url.strip().rstrip("/")
+            if clean_url and clean_url not in allowed_origins:
+                allowed_origins.append(clean_url)
+
+    if cors_origin == "*" and config_name != "production":
+        CORS(app, resources={r"/api/*": {"origins": "*"}})
+    else:
+        CORS(
+            app,
+            resources={r"/api/*": {"origins": allowed_origins}},
+            supports_credentials=True,
+            allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+            methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+        )
     db.init_app(app)
 
     # Load recommendation services
@@ -157,4 +187,4 @@ if __name__ == "__main__":
         db.create_all()
     port = int(os.environ.get("PORT", 5000))
     logger.info(f"Starting server on http://localhost:{port}")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=(env == "development"))
