@@ -31,10 +31,7 @@ services:
       - key: DEFAULT_RECOMMENDATION_K
         value: "10"
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: personalized-ecommerce-frontend
-          property: host
+        value: https://personalized-ecommerce-frontend.onrender.com
 
   # ---------------------------------------------------------------------------
   # 2. React 18 + Vite Frontend (Static Site)
@@ -42,8 +39,6 @@ services:
   - type: web
     name: personalized-ecommerce-frontend
     runtime: static
-    region: oregon
-    plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     routes:
